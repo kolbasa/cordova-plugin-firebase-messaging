@@ -1,5 +1,46 @@
 /**
  *
+ * @param {string} name Channel name
+ * @returns {Promise<void>} Callback when operation is completed
+ *
+ * @example
+ * cordova.plugins.firebase.messaging.renameChannel("memos", "Memos");
+ */
+export function renameChannel(name: string): Promise<void>;
+/**
+ *
+ * @param {string} channelId Channel ID
+ * @returns {Promise<void>} Callback when operation is completed
+ *
+ * @example
+ * cordova.plugins.firebase.messaging.removeChannel("memos");
+ */
+export function removeChannel(channelId: string): Promise<void>;
+/**
+ *
+ * @param {string} title Title
+ *
+ * @param {object} options Additional options.
+ * @param {number=} options.id Notification ID
+ * @param {string=} options.text Text
+ * @param {string=} options.color Hex color
+ * @param {number=} options.timeout Timout in Milliseconds
+ * @param {number=} options.priority [-2|-1|0|1|2]
+ *
+ * @returns {Promise<void>} Callback when operation is completed
+ *
+ * @example
+ * cordova.plugins.firebase.messaging.sendMessage("Hello", "World");
+ */
+export function sendMessage(title: string, options: {
+    id?: number | undefined;
+    text?: string | undefined;
+    color?: string | undefined;
+    timeout?: number | undefined;
+    priority?: number | undefined;
+}): Promise<void>;
+/**
+ *
  * Subscribe to a FCM topic.
  * @param {string} topic Topic name
  * @returns {Promise<void>} Callback when operation is completed
