@@ -30,9 +30,9 @@ export function removeChannel(channelId: string): Promise<void>;
  * @returns {Promise<void>} Callback when operation is completed
  *
  * @example
- * cordova.plugins.firebase.messaging.sendMessage("Hello", "World");
+ * cordova.plugins.firebase.messaging.localNotification("Hello", "World");
  */
-export function sendMessage(title: string, options: {
+export function localNotification(title: string, options: {
     id?: number | undefined;
     text?: string | undefined;
     color?: string | undefined;

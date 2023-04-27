@@ -46,7 +46,7 @@ exports.removeChannel =
         });
     };
 
-exports.sendMessage =
+exports.localNotification =
     /**
      *
      * @param {string} title Title
@@ -61,11 +61,11 @@ exports.sendMessage =
      * @returns {Promise<void>} Callback when operation is completed
      *
      * @example
-     * cordova.plugins.firebase.messaging.sendMessage("Hello", "World");
+     * cordova.plugins.firebase.messaging.localNotification("Hello", "World");
      */
     function(title, options) {
         return new Promise(function(resolve, reject) {
-            exec(resolve, reject, PLUGIN_NAME, "sendMessage", [title, options]);
+            exec(resolve, reject, PLUGIN_NAME, "localNotification", [title, options]);
         });
     };
 

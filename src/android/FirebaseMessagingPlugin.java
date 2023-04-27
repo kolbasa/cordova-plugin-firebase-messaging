@@ -90,7 +90,7 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
     }
 
     @CordovaMethod
-    private void sendMessage(CordovaArgs args, CallbackContext callbackContext) throws Exception {
+    private void localNotification(CordovaArgs args, CallbackContext callbackContext) throws Exception {
 
         Context context = cordova.getContext();
 
