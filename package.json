@@ -41,7 +41,7 @@
     "postdocs": "perl -i -0pe 's/(<!-- TypedocGenerated -->).*/$1\n\n/gms' README.md && cat ./docs/README.md >> README.md"
   },
   "devDependencies": {
-    "typedoc": "^0.23.9",
-    "typedoc-plugin-markdown": "^3.13.4"
+    "typedoc": "^0.24.4",
+    "typedoc-plugin-markdown": "^3.15.1"
   }
 }

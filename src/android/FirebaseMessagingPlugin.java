@@ -1,15 +1,20 @@
 package by.chemerisuk.cordova.firebase;
 
-import android.Manifest;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.activity.result.ActivityResultLauncher;
 
@@ -27,7 +32,6 @@ import org.json.JSONObject;
 import java.util.Set;
 
 import by.chemerisuk.cordova.support.CordovaMethod;
-import by.chemerisuk.cordova.support.ExecutionThread;
 import by.chemerisuk.cordova.support.ReflectiveCordovaPlugin;
 import me.leolin.shortcutbadger.ShortcutBadger;
 
@@ -47,6 +51,8 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
     private static FirebaseMessagingPlugin instance;
     private NotificationManager notificationManager;
     private FirebaseMessaging firebaseMessaging;
+    private int notificationID = 1;
+
     private CallbackContext requestPermissionCallback;
 
     @Override
@@ -69,6 +75,97 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
     private void unsubscribe(CordovaArgs args, CallbackContext callbackContext) throws Exception {
         String topic = args.getString(0);
         await(firebaseMessaging.unsubscribeFromTopic(topic));
+        callbackContext.success();
+    }
+
+    @CordovaMethod
+    private void renameChannel(CordovaArgs args, CallbackContext callbackContext) throws Exception {
+        String name = args.getString(0);
+        FirebaseMessagingPluginService.renameChannel(cordova.getContext(), name);
+        callbackContext.success();
+    }
+
+    @CordovaMethod
+    private void removeChannel(CordovaArgs args, CallbackContext callbackContext) throws Exception {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String channel = args.getString(0);
+            notificationManager.deleteNotificationChannel(channel);
+        }
+        callbackContext.success();
+    }
+
+    @CordovaMethod
+    private void localNotification(CordovaArgs args, CallbackContext callbackContext) throws Exception {
+
+        Context context = cordova.getContext();
+
+        FirebaseMessagingPluginService.createDefaultChannel(context);
+
+        int id = 0;
+        int timeout = 0;
+        int priority = 1;
+        String text = null;
+        String color = null;
+
+        String title = args.getString(0);
+
+        try {
+            JSONObject options = args.getJSONObject(1);
+            id = options.optInt("id");
+            timeout = options.optInt("timeout");
+            priority = options.optInt("priority");
+            text = options.optString("text");
+            color = options.optString("color");
+        } catch (JSONException e) {
+            //
+        }
+
+        if (id == 0) {
+            id = notificationID++;
+        }
+
+        if (priority < -2 || priority > 2) {
+            priority = 1;
+        }
+
+        ApplicationInfo ai = context.getPackageManager().getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
+        String channel = ai.metaData.getString(FirebaseMessagingPluginService.NOTIFICATION_CHANNEL_KEY, "default");
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel)
+                .setContentTitle(title)
+                .setSmallIcon(ai.metaData.getInt(FirebaseMessagingPluginService.NOTIFICATION_ICON_KEY, ai.icon))
+                .setColor(Color.BLACK)
+                .setPriority(priority);
+
+        if (text != null && !text.isEmpty()) {
+            builder.setContentText(text);
+        }
+
+        if (color != null && !color.isEmpty()) {
+            builder.setColor(Color.parseColor(color));
+        }
+
+        if (timeout > 1000) {
+            builder.setTimeoutAfter(timeout);
+        }
+
+        String packageName = context.getPackageName();
+        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
+
+        assert launchIntent != null;
+        ComponentName component = launchIntent.getComponent();
+
+        assert component != null;
+        String className = component.getClassName();
+
+        Intent intent = new Intent(context, Class.forName(className));
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent,
+                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0);
+        builder.setContentIntent(pendingIntent);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        notificationManager.notify(id, builder.build());
+
         callbackContext.success();
     }
 
@@ -150,9 +247,9 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
 					requestPermissionCallback = callbackContext;
 					String[] permissions = new String[]{"android.permission.POST_NOTIFICATIONS"};
 					requestPermissions(plugin, 1, permissions);
-			
 
-					
+
+
 				} else {
 					callbackContext.error("Notifications permission is not granted");
 				}
@@ -200,8 +297,8 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
             notificationData.put("google.sent_time", remoteMessage.getSentTime());
 
             if (instance != null) {
-                CallbackContext callbackContext = instance.isBackground ? instance.backgroundCallback
-                        : instance.foregroundCallback;
+                CallbackContext callbackContext = instance.isBackground ?
+                        instance.backgroundCallback : instance.foregroundCallback;
                 instance.sendNotification(notificationData, callbackContext);
             }
         } catch (JSONException e) {
