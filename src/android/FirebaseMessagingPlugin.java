@@ -1,5 +1,6 @@
 package by.chemerisuk.cordova.firebase;
 
+import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
