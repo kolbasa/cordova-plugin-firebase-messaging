@@ -125,9 +125,9 @@ static NSNumber* notificationId = nil;
         }
     }
 
-    NSLog(@"%@", title);
-    NSLog(@"%@", notificationId);
-    NSLog(@"%@", [NSString stringWithFormat:@"%0.2f", timeout]);
+    // NSLog(@"%@", title);
+    // NSLog(@"%@", notificationId);
+    // NSLog(@"%@", [NSString stringWithFormat:@"%0.2f", timeout]);
 
     // Create the notification content
     UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
